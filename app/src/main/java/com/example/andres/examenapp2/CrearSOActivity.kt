@@ -4,54 +4,104 @@ import android.content.Intent
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
-import com.beust.klaxon.Klaxon
 import com.example.andres.examenapp2.BDD.Companion.ip
 import com.github.kittinunf.fuel.httpPost
+import com.github.kittinunf.fuel.httpPut
 import com.github.kittinunf.result.Result
 import kotlinx.android.synthetic.main.activity_crear_so.*
-import kotlinx.android.synthetic.main.activity_main.*
 
 class CrearSOActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_crear_so)
+        val sistema = intent.getParcelableExtra<SistemaOperativoSe?>("sistema")
+        //val sistema: SistemaOperativo? = null
+        var esnuevo = true
+
+        if (sistema != null) {
+            txt_id_so_r.setText(sistema.id.toString())
+            txt_nombre.setText(sistema.nombre)
+            txt_version.setText(sistema.version)
+            txt_fecha.setText(sistema.fechaLanzamiento)
+            txt_peso.setText(sistema.peso_gigas)
+            esnuevo = false
+        }
+
+
+
         boton_registrar_so.setOnClickListener {
-            crearSO()
+            if(esnuevo){
+                crearActualizarSO(true)
+            }else{
+                crearActualizarSO(false)
+            }
         }
     }
-    fun crearSO(){
-        //Crear objeto
+
+    fun crearActualizarSO(es_nuevo:Boolean){
+
+        val id = txt_id_so_r.text.toString()
         val nombre = txt_nombre.text.toString()
         val version = txt_version.text.toString()
         val fecha = txt_fecha.text.toString()
         val peso = txt_peso.text.toString()
+        val so:SistemaOperativo
+        if(es_nuevo){
+            so = SistemaOperativo(id=null,nombre = nombre,version =  version,fechaLanzamiento =  fecha,peso_gigas =  peso)
+        }else{
+            so = SistemaOperativo(id=id.toInt(),nombre = nombre,version =  version,fechaLanzamiento =  fecha,peso_gigas =  peso)
+        }
 
-        val so = SistemaOperativo(nombre, version, fecha, peso)
+        //Crear objeto
         val parametros = listOf("nombre" to so.nombre, "version" to so.version,
                 "fechaLanzamiento" to so.fechaLanzamiento, "peso_gigas" to so.peso_gigas)
         Log.i("htpp",parametros.toString())
+        var direccion = ""
+        if(es_nuevo){
+            direccion = "http://$ip:80/sistemas/api/"
+            val url = direccion
+                    .httpPost(parametros)
+                    .responseString { request, response, result ->
+                        when (result) {
+                            is Result.Failure -> {
+                                val ex = result.getException()
+                                Log.i("http-p", ex.toString())
+                                mensaje(this,"error","Datos no validos")
 
-        val direccion = "http://$ip:80/sistemas/api/"
-        Log.i("http",direccion)
-        val url = "http://$ip:80/sistemas/api/"
-                .httpPost(parametros)
-                .responseString { request, response, result ->
-                    when (result) {
-                        is Result.Failure -> {
-                            val ex = result.getException()
-                            Log.i("http-p", ex.toString())
-                            mensaje(this,"error","Datos no validos")
-
-                        }
-                        is Result.Success -> run {
+                            }
+                            is Result.Success -> run {
                                 val data = result.get()
                                 Log.i("http-p", data)
                                 mensaje(this,"Aceptado","Datos validos, espere...")
-                            cargarDatosSO(direccion, ::irlistarSo)
+                                cargarDatosSO(direccion, ::irlistarSo)
                             }
+                        }
                     }
-                }
+        }else{
+            direccion = "http://$ip:80/sistemas/api/${so.id}/update"
+            val url = direccion
+                    .httpPut(parametros)
+                    .responseString { request, response, result ->
+                        when (result) {
+                            is Result.Failure -> {
+                                val ex = result.getException()
+                                Log.i("http-p", ex.toString())
+                                mensaje(this,"error","Datos no validos")
+
+                            }
+                            is Result.Success -> run {
+                                val data = result.get()
+                                Log.i("http-p", data)
+                                mensaje(this,"Aceptado","Datos validos, espere...")
+                                val redire = "http://$ip:80/sistemas/api/"
+                                cargarDatosSO(redire, ::irlistarSo)
+                            }
+                        }
+                    }
+        }
+        Log.i("http",direccion)
+
     }
 
     fun irlistarSo(){

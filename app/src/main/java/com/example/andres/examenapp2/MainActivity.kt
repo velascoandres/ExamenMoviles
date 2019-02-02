@@ -35,6 +35,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun irActividadListarOS(){
+        finish()
         // 1 Cargar datos de la API
         // 2 Ir al Intent
         // 3 Hacer esa cosa de matar al stack

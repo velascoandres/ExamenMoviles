@@ -1,7 +1,9 @@
 package com.example.andres.examenapp2
 
+import android.content.Intent.getIntent
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.support.v4.content.ContextCompat.startActivity
 import android.support.v7.widget.DefaultItemAnimator
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
@@ -14,6 +16,14 @@ import android.widget.TextView
 import kotlinx.android.synthetic.main.activity_listar_soactivity.*
 import android.support.v7.widget.PopupMenu
 import android.widget.Button
+import com.github.kittinunf.fuel.httpPost
+import com.github.kittinunf.result.Result
+import android.support.v4.content.ContextCompat.startActivity
+import android.content.Intent.getIntent
+import android.content.Intent
+import android.support.v4.content.ContextCompat
+import com.example.andres.examenapp2.BDD.Companion.sistemasOperativos
+import com.github.kittinunf.fuel.httpDelete
 
 
 class ListarActivity : AppCompatActivity() {
@@ -35,6 +45,36 @@ class ListarActivity : AppCompatActivity() {
         adaptador.notifyDataSetChanged()
 
     }
+
+
+    fun refrescar(){
+        finish()
+        val direccion = "http://${BDD.ip}:80/sistemas/api/"
+        Log.i("http",direccion)
+        cargarDatosSO(direccion,fun(){})
+        startActivity(getIntent());
+    }
+
+    fun compartir(contenido:String){
+        val sendIntent: Intent = Intent().apply {
+            action = Intent.ACTION_SEND
+            putExtra(Intent.EXTRA_TEXT, contenido)
+            type = "text/plain"
+        }
+        startActivity(sendIntent)
+    }
+
+
+    fun irActualizar(sistemaOperativo: SistemaOperativoSe){
+        val intentActividadIntent = Intent(
+                this,
+                CrearSOActivity::class.java
+        )
+
+        intentActividadIntent.putExtra("sistema", sistemaOperativo)
+        startActivity(intentActividadIntent)
+
+    }
 }
 
 
@@ -49,11 +89,13 @@ class SistemaOpAdaptador(private val listaSistemaOperativos: List<SistemaOperati
     inner class MyViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         var nombreTextView: TextView
         var versionTextView: TextView
+        var idSOTextView: TextView
         var opciones:Button
 
         init {
             nombreTextView = view.findViewById(R.id.txt_nombre_so) as TextView
             versionTextView = view.findViewById(R.id.txt_version_so) as TextView
+            idSOTextView = view.findViewById(R.id.txt_so_id) as TextView
             opciones = view.findViewById(R.id.btn_opciones) as Button
 
 
@@ -96,25 +138,80 @@ class SistemaOpAdaptador(private val listaSistemaOperativos: List<SistemaOperati
 
     // Llenamos los datos del layout
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
-        val persona = listaSistemaOperativos[position]
+        val sistema = listaSistemaOperativos[position]
 
-        holder.nombreTextView.setText(persona.nombre)
-        holder.versionTextView.setText(persona.version)
+        holder.nombreTextView.setText(sistema.nombre)
+        holder.versionTextView.setText(sistema.version)
+        holder.idSOTextView.setText(sistema.id.toString())
         holder.opciones.setOnClickListener {
-            val popup = PopupMenu(contexto, holder.nombreTextView)
+            val popup = PopupMenu(contexto, holder.idSOTextView)
             popup.inflate(R.menu.options_menu)
             //adding click listener
             popup.setOnMenuItemClickListener { item ->
                 when (item.getItemId()) {
-                    R.id.eliminar_so ->
+                    R.id.eliminar_so ->{
                         //handle menu1 click
+                        mensaje_dialogo(contexto,"Eliminar el SO?",
+                                fun (){
+                                    val id = holder.idSOTextView.text.toString()
+                                    Log.i("Eliminar SO->",id)
+
+                                    val direccion = "http://${BDD.ip}:80/sistemas/api/"
+                                    Log.i("http",direccion)
+                                    val parametros = listOf("nombre" to id)
+                                    val url = "http://${BDD.ip}:80/sistemas/api/$id/delete"
+                                            .httpDelete(parametros)
+                                            .responseString { request, response, result ->
+                                                when (result) {
+                                                    is Result.Failure -> {
+                                                        val ex = result.getException()
+                                                        Log.i("http-p", ex.toString())
+                                                        mensaje(contexto,"error","Datos no validos")
+
+                                                    }
+                                                    is Result.Success -> run {
+                                                        val data = result.get()
+                                                        Log.i("http-p", data)
+                                                        mensaje(contexto,"Aceptado","Datos validos, espere...")
+                                                        contexto.refrescar()
+                                                    }
+                                                }
+                                            }
+
+
+
+
+                                }
+                        )
+
+
+
                         true
-                    R.id.editar_so ->
+                    }
+
+                    R.id.editar_so ->{
+                        val id = holder.idSOTextView.text.toString()
+                        val so = sistemasOperativos.filter { it.id==id.toInt() }[0]
+                        Log.i("Actualizar SO->",so.fechaLanzamiento)
+                        val soSerializado = SistemaOperativoSe(
+                                id.toInt(),
+                                nombre = so.nombre,
+                                version = so.version,
+                                fechaLanzamiento = so.fechaLanzamiento,
+                                peso_gigas = so.peso_gigas
+                                )
+                        contexto.irActualizar(soSerializado)
                         //handle menu2 click
                         true
-                    R.id.compartir_so ->
+                    }
+
+                    R.id.compartir_so ->{
+                        val nombre = holder.nombreTextView.text.toString()
+                        contexto.compartir(nombre)
                         //handle menu3 click
                         true
+                    }
+
                     else -> false
                 }
             }
@@ -126,6 +223,7 @@ class SistemaOpAdaptador(private val listaSistemaOperativos: List<SistemaOperati
     override fun getItemCount(): Int {
         return listaSistemaOperativos.size
     }
+
 
 }
 
