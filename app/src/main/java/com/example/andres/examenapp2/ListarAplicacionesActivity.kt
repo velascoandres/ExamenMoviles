@@ -34,6 +34,11 @@ class ListarAplicacionesActivity : AppCompatActivity() {
         txt_nombre_so_parce.setText(sistema.nombre)
         txt_version_so_parce.setText(sistema.version)
 
+        btn_nuevo_app
+                .setOnClickListener {
+                    irACrearHijo()
+                }
+
         val layoutManager = LinearLayoutManager(this)
         val rv = rv_hijos
         val adaptador = AppAdaptador(BDD.aplicaciones, this, rv)
@@ -74,6 +79,15 @@ class ListarAplicacionesActivity : AppCompatActivity() {
         intentActividadIntent.putExtra("sistema",aplicacion)
         startActivity(intentActividadIntent)
 
+    }
+
+    fun irACrearHijo(){
+        val intentActividadIntent = Intent(
+                this,
+                CrearApplicacionActivity::class.java
+        )
+
+          startActivity(intentActividadIntent)
     }
 }
 
