@@ -219,20 +219,25 @@ class AppAdaptador(private val listaAplicaciones: List<Aplicacion>,
 
                     R.id.editar_so ->{
                         val id = holder.idAppTextView.text.toString()
-                        val app = aplicaciones.filter { it.id==id.toInt() }[0]
-                        Log.i("Actualizar SO->",app.fechaLanzamiento)
-                        val appSerializada = AplicacionSe(
-                                id.toInt(),
-                                nombre = app.nombre,
-                                version = app.version,
-                                fechaLanzamiento = app.fechaLanzamiento,
-                                peso_gigas = app.peso_gigas,
-                                costo = app.costo,
-                                url_descargar = app.url_descargar,
-                                codigo_barras = app.codigo_barras,
-                                sistemaOperativo = app.sistemaOperativo!!
-                        )
-                        contexto.irActualizar(appSerializada)
+                        mensaje_dialogo(contexto,"Desea editar la Aplicacion?",
+                        fun(){
+                            val app = aplicaciones.filter { it.id==id.toInt() }[0]
+                            Log.i("Actualizar SO->",app.fechaLanzamiento)
+                            val appSerializada = AplicacionSe(
+                                    id.toInt(),
+                                    nombre = app.nombre,
+                                    version = app.version,
+                                    fechaLanzamiento = app.fechaLanzamiento,
+                                    peso_gigas = app.peso_gigas,
+                                    costo = app.costo,
+                                    url_descargar = app.url_descargar,
+                                    codigo_barras = app.codigo_barras,
+                                    sistemaOperativo = app.sistemaOperativo!!
+                            )
+                            contexto.irActualizar(appSerializada)
+
+                        })
+
                         //handle menu2 click
                         true
                     }
