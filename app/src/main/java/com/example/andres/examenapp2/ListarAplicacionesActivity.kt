@@ -22,14 +22,29 @@ import kotlinx.android.synthetic.main.activity_listar_aplicaciones.*
 
 class ListarAplicacionesActivity : AppCompatActivity() {
     var id_so = 0
+    var id_res = 0
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_listar_aplicaciones)
 
+        id_res = intent.getIntExtra("id_so",0)
 
-        val sistema = intent.getParcelableExtra<SistemaOperativoSe>("sistema")
+        var sistema:SistemaOperativoSe
+        if(id_res ==0){
+            sistema = intent.getParcelableExtra<SistemaOperativoSe>("sistema")
+        }else{
+            var so = BDD.sistemasOperativos.filter { it.id==id_res }[0]
+            sistema= SistemaOperativoSe(
+                    id_res,
+                    nombre = so.nombre,
+                    version = so.version,
+                    fechaLanzamiento = so.fechaLanzamiento,
+                    peso_gigas = so.peso_gigas
+            )
+        }
 
         id_so = sistema.id!!
+
 
         txt_nombre_so_parce.setText(sistema.nombre)
         txt_version_so_parce.setText(sistema.version)
@@ -73,20 +88,21 @@ class ListarAplicacionesActivity : AppCompatActivity() {
     fun irActualizar(aplicacion: AplicacionSe){
         val intentActividadIntent = Intent(
                 this,
-                CrearSOActivity::class.java
+                CrearApplicacionActivity::class.java
         )
 
-        intentActividadIntent.putExtra("sistema",aplicacion)
+        intentActividadIntent.putExtra("aplicacion",aplicacion)
         startActivity(intentActividadIntent)
 
     }
 
     fun irACrearHijo(){
+        finish()
         val intentActividadIntent = Intent(
                 this,
                 CrearApplicacionActivity::class.java
         )
-
+          intentActividadIntent.putExtra("id_so",id_so)
           startActivity(intentActividadIntent)
     }
 }
@@ -214,7 +230,7 @@ class AppAdaptador(private val listaAplicaciones: List<Aplicacion>,
                                 costo = app.costo,
                                 url_descargar = app.url_descargar,
                                 codigo_barras = app.codigo_barras,
-                                sistemaOperativo = app.sistemaOperativo
+                                sistemaOperativo = app.sistemaOperativo!!
                         )
                         contexto.irActualizar(appSerializada)
                         //handle menu2 click

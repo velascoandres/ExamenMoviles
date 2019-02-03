@@ -11,14 +11,14 @@ import android.os.Environment
 import android.provider.MediaStore
 import android.support.v4.content.FileProvider
 import android.util.Log
-import android.widget.ArrayAdapter
+import com.beust.klaxon.Klaxon
+import com.github.kittinunf.fuel.httpGet
 import com.github.kittinunf.fuel.httpPost
 import com.github.kittinunf.fuel.httpPut
 import com.github.kittinunf.result.Result
 import com.google.firebase.ml.vision.FirebaseVision
 import com.google.firebase.ml.vision.common.FirebaseVisionImage
 import kotlinx.android.synthetic.main.activity_crear_applicacion.*
-import kotlinx.android.synthetic.main.activity_crear_so.*
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
@@ -28,7 +28,7 @@ class CrearApplicacionActivity : AppCompatActivity() {
 
     var pathActualFoto = ""
     var respuestaBarcode = ArrayList<String>()
-
+    var id_so=0
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_crear_applicacion)
@@ -38,8 +38,49 @@ class CrearApplicacionActivity : AppCompatActivity() {
             tomarFoto()
         }
 
+        val aplicacion = intent.getParcelableExtra<AplicacionSe?>("aplicacion")
+        val sistemaOperativo = intent.getParcelableExtra<SistemaOperativoSe?>("sistema")
 
 
+        id_so=intent.getIntExtra("id_so",0)
+        //val sistema: SistemaOperativo? = null
+        var esnuevo = true
+
+        if (aplicacion != null) {
+            txt_id_app.setText(aplicacion.id.toString())
+            txt_nombre_app.setText(aplicacion.nombre)
+            txt_version_app.setText(aplicacion.version)
+            txt_fecha_app.setText(aplicacion.fechaLanzamiento)
+            txt_peso_app.setText(aplicacion.peso_gigas)
+            txt_costo_app.setText(aplicacion.costo)
+            txt_url_download.setText(aplicacion.url_descargar)
+            txt_codigo.setText(aplicacion.codigo_barras)
+            id_so=aplicacion.sistemaOperativo
+            esnuevo = false
+        }
+
+
+
+        btn_guardar_app.setOnClickListener {
+            if(esnuevo){
+                crearActualizarAPP(true)
+            }else{
+                crearActualizarAPP(false)
+            }
+        }
+
+
+    }
+
+
+    fun irlistarApp(){
+        //finish()
+        val intent = Intent(
+                this,
+                ListarAplicacionesActivity::class.java
+        )
+        intent.putExtra("id_so",id_so)
+        startActivity(intent)
     }
 
     fun tomarFoto(){
@@ -123,27 +164,39 @@ class CrearApplicacionActivity : AppCompatActivity() {
                 }
     }
 
-    fun crearActualizarSO(es_nuevo:Boolean){
+    fun crearActualizarAPP(es_nuevo:Boolean){
 
-        val id = txt_id_so_r.text.toString()
-        val nombre = txt_nombre.text.toString()
-        val version = txt_version.text.toString()
-        val fecha = txt_fecha.text.toString()
-        val peso = txt_peso.text.toString()
-        val so:SistemaOperativo
+        val id = txt_id_app.text.toString()
+        val nombre = txt_nombre_app.text.toString()
+        val version = txt_version_app.text.toString()
+        val fecha = txt_fecha_app.text.toString()
+        val peso = txt_peso_app.text.toString()
+        val costo = txt_costo_app.text.toString()
+        val url_descargar = txt_url_download.text.toString()
+        val codigo_barras = txt_codigo.text.toString()
+
+        val app:Aplicacion
         if(es_nuevo){
-            so = SistemaOperativo(id=null,nombre = nombre,version =  version,fechaLanzamiento =  fecha,peso_gigas =  peso)
+            app = Aplicacion(id=null,nombre = nombre,version =  version,fechaLanzamiento =  fecha,peso_gigas =  peso,costo = costo,url_descargar = url_descargar,codigo_barras = codigo_barras,sistemaOperativo = id_so)
         }else{
-            so = SistemaOperativo(id=id.toInt(),nombre = nombre,version =  version,fechaLanzamiento =  fecha,peso_gigas =  peso)
+            app = Aplicacion(id=id.toInt(),nombre = nombre,version =  version,fechaLanzamiento =  fecha,peso_gigas =  peso,costo = costo,url_descargar = url_descargar,codigo_barras = codigo_barras,sistemaOperativo = id_so)
         }
 
         //Crear objeto
-        val parametros = listOf("nombre" to so.nombre, "version" to so.version,
-                "fechaLanzamiento" to so.fechaLanzamiento, "peso_gigas" to so.peso_gigas)
+        val parametros = listOf(
+                "nombre" to app.nombre,
+                "version" to app.version,
+                "fechaLanzamiento" to app.fechaLanzamiento,
+                "peso_gigas" to app.peso_gigas,
+                "costo" to app.costo,
+                "url_descargar" to app.url_descargar,
+                "codigo_barras" to app.codigo_barras,
+                "sistemaOperativo" to app.sistemaOperativo
+                )
         Log.i("htpp",parametros.toString())
         var direccion = ""
         if(es_nuevo){
-            direccion = "http://${BDD.ip}:80/sistemas/api/"
+            direccion = "http://${BDD.ip}:80/sistemas/api/app/"
             val url = direccion
                     .httpPost(parametros)
                     .responseString { request, response, result ->
@@ -158,12 +211,13 @@ class CrearApplicacionActivity : AppCompatActivity() {
                                 val data = result.get()
                                 Log.i("http-p", data)
                                 mensaje(this,"Aceptado","Datos validos, espere...")
-                                //cargarDatosSO(direccion, ::irlistarSo)
+                                val redire = "http://${BDD.ip}:80/sistemas/api/app/?so=$id_so"
+                                cargarDatosApp(redire,::irlistarApp)
                             }
                         }
                     }
         }else{
-            direccion = "http://${BDD.ip}:80/sistemas/api/${so.id}/update"
+            direccion = "http://${BDD.ip}:80/sistemas/api/app/${app.id}/update"
             val url = direccion
                     .httpPut(parametros)
                     .responseString { request, response, result ->
@@ -178,8 +232,8 @@ class CrearApplicacionActivity : AppCompatActivity() {
                                 val data = result.get()
                                 Log.i("http-p", data)
                                 mensaje(this,"Aceptado","Datos validos, espere...")
-                                val redire = "http://${BDD.ip}:80/sistemas/api/"
-                               // cargarDatosSO(redire, ::irlistarSo)
+                                val redire = "http://${BDD.ip}:80/sistemas/api/app/?so=$id_so"
+                                cargarDatosApp(redire,::irlistarApp)
                             }
                         }
                     }
@@ -187,6 +241,7 @@ class CrearApplicacionActivity : AppCompatActivity() {
         Log.i("http",direccion)
 
     }
+
 
 
     companion object {

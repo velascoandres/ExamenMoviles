@@ -22,7 +22,7 @@ class Aplicacion(
         var costo:String,
         var url_descargar:String,
         var codigo_barras:String,
-        var sistemaOperativo: Int
+        var sistemaOperativo: Int?
 ){}
 
 
