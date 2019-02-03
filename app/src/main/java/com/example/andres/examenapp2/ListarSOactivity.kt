@@ -219,16 +219,23 @@ class SistemaOpAdaptador(private val listaSistemaOperativos: List<SistemaOperati
 
                     R.id.editar_so ->{
                         val id = holder.idSOTextView.text.toString()
-                        val so = sistemasOperativos.filter { it.id==id.toInt() }[0]
-                        Log.i("Actualizar SO->",so.fechaLanzamiento)
-                        val soSerializado = SistemaOperativoSe(
-                                id.toInt(),
-                                nombre = so.nombre,
-                                version = so.version,
-                                fechaLanzamiento = so.fechaLanzamiento,
-                                peso_gigas = so.peso_gigas
+                        mensaje_dialogo(contexto,"Desea editar el SO?",
+
+                                fun(){
+                                    val so = sistemasOperativos.filter { it.id==id.toInt() }[0]
+                                    Log.i("Actualizar SO->",so.fechaLanzamiento)
+                                    val soSerializado = SistemaOperativoSe(
+                                            id.toInt(),
+                                            nombre = so.nombre,
+                                            version = so.version,
+                                            fechaLanzamiento = so.fechaLanzamiento,
+                                            peso_gigas = so.peso_gigas
+                                    )
+                                    contexto.irActualizar(soSerializado)
+                                }
+
                                 )
-                        contexto.irActualizar(soSerializado)
+
                         //handle menu2 click
                         true
                     }

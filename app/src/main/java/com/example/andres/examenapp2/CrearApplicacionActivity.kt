@@ -74,7 +74,7 @@ class CrearApplicacionActivity : AppCompatActivity() {
 
 
     fun irlistarApp(){
-        //finish()
+        finish()
         val intent = Intent(
                 this,
                 ListarAplicacionesActivity::class.java

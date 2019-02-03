@@ -41,7 +41,7 @@ fun mensaje_dialogo(actividad:Activity,contenido:String,funcion: () -> Unit){
                     }
             )
             .setNegativeButton(
-                    "No, vamos bielas",null
+                    "No",null
             )
 
 
