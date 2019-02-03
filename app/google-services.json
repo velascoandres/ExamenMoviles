@@ -1,0 +1,73 @@
+{
+  "project_info": {
+    "project_number": "155505870360",
+    "firebase_url": "https://moviles-204de.firebaseio.com",
+    "project_id": "moviles-204de",
+    "storage_bucket": "moviles-204de.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:155505870360:android:b5f6c55547bdbf99",
+        "android_client_info": {
+          "package_name": "com.example.andres.examenapp2"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "155505870360-brldd7nb9ttd35pcc6cjbnf0mmh4qsf5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCuz8ffyyzFQqxrQz2UZBwfNb028nRSlvs"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:155505870360:android:ea9b2ac5b46aa7e5",
+        "android_client_info": {
+          "package_name": "com.example.usrdel.a2018movilesgr2"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "155505870360-brldd7nb9ttd35pcc6cjbnf0mmh4qsf5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCuz8ffyyzFQqxrQz2UZBwfNb028nRSlvs"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
