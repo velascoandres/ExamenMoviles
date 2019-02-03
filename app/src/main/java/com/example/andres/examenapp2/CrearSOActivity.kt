@@ -37,6 +37,10 @@ class CrearSOActivity : AppCompatActivity() {
                 crearActualizarSO(false)
             }
         }
+
+        boton_cancelar_reg_so.setOnClickListener {
+            irInicio()
+        }
     }
 
     fun crearActualizarSO(es_nuevo:Boolean){
@@ -111,4 +115,14 @@ class CrearSOActivity : AppCompatActivity() {
         )
         startActivity(intent)
     }
+
+    fun irInicio(){
+        finish()
+        val intent = Intent(
+                this,
+                MainActivity::class.java
+        )
+        startActivity(intent)
+    }
+
 }

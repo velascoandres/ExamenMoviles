@@ -69,6 +69,11 @@ class CrearApplicacionActivity : AppCompatActivity() {
             }
         }
 
+        btn_cancelar_app.setOnClickListener {
+            val redire = "http://${BDD.ip}:80/sistemas/api/app/?so=$id_so"
+            cargarDatosApp(redire,::irlistarApp)
+        }
+
 
     }
 
