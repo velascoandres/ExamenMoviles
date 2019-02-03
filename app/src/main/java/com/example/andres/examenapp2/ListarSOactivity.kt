@@ -1,9 +1,7 @@
 package com.example.andres.examenapp2
 
-import android.content.Intent.getIntent
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
-import android.support.v4.content.ContextCompat.startActivity
 import android.support.v7.widget.DefaultItemAnimator
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
@@ -16,14 +14,12 @@ import android.widget.TextView
 import kotlinx.android.synthetic.main.activity_listar_soactivity.*
 import android.support.v7.widget.PopupMenu
 import android.widget.Button
-import com.github.kittinunf.fuel.httpPost
 import com.github.kittinunf.result.Result
-import android.support.v4.content.ContextCompat.startActivity
-import android.content.Intent.getIntent
 import android.content.Intent
-import android.support.v4.content.ContextCompat
+import com.beust.klaxon.Klaxon
 import com.example.andres.examenapp2.BDD.Companion.sistemasOperativos
 import com.github.kittinunf.fuel.httpDelete
+import com.github.kittinunf.fuel.httpGet
 
 
 class ListarActivity : AppCompatActivity() {
@@ -74,6 +70,38 @@ class ListarActivity : AppCompatActivity() {
         intentActividadIntent.putExtra("sistema", sistemaOperativo)
         startActivity(intentActividadIntent)
 
+    }
+
+    fun irAlistarHijos(sistemaOperativo: SistemaOperativoSe){
+
+        "http://${BDD.ip}:80/sistemas/api/app/?so=${sistemaOperativo.id}".httpGet().responseString{request, response, result ->
+            when (result) {
+                is Result.Failure -> {
+                    val ex = result.getException()
+                    Log.i("http", ex.toString())
+                }
+                is Result.Success -> {
+                    val data = result.get()
+                    BDD.aplicaciones.clear()
+                    val wordDict = Klaxon().parseArray<Aplicacion>(data)
+                    Log.i("http", "Datos: ${wordDict.toString()}")
+                    if (wordDict != null) {
+                        for ( item in wordDict.iterator()){
+                            BDD.aplicaciones.add(item)
+                        }
+                    }
+
+                    finish()
+                    val intentActividadIntent = Intent(
+                            this,
+                            ListarAplicacionesActivity::class.java
+                    )
+
+                    intentActividadIntent.putExtra("sistema", sistemaOperativo)
+                    startActivity(intentActividadIntent)
+                }
+            }
+        }
     }
 }
 
@@ -211,6 +239,23 @@ class SistemaOpAdaptador(private val listaSistemaOperativos: List<SistemaOperati
                         //handle menu3 click
                         true
                     }
+
+                    R.id.hijos_so ->{
+                        var direccion = ""
+                        val id = holder.idSOTextView.text.toString()
+                        val so = sistemasOperativos.filter { it.id==id.toInt() }[0]
+                        Log.i("Listar SO->",so.fechaLanzamiento)
+                        val soSerializado = SistemaOperativoSe(
+                                id.toInt(),
+                                nombre = so.nombre,
+                                version = so.version,
+                                fechaLanzamiento = so.fechaLanzamiento,
+                                peso_gigas = so.peso_gigas
+                        )
+                        contexto.irAlistarHijos(soSerializado)
+                        true
+                    }
+
 
                     else -> false
                 }

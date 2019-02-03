@@ -8,6 +8,7 @@ import android.content.DialogInterface
 import android.graphics.Color
 import android.util.Log
 import com.beust.klaxon.Klaxon
+import com.example.andres.examenapp2.BDD.Companion.aplicaciones
 import com.example.andres.examenapp2.BDD.Companion.sistemasOperativos
 import com.github.kittinunf.fuel.Fuel
 import com.github.kittinunf.fuel.httpGet
@@ -65,6 +66,34 @@ fun cargarDatosSO(url:String,funcion_intent: () -> Unit){
                 if (wordDict != null) {
                     for ( item in wordDict.iterator()){
                         sistemasOperativos.add(item)
+                    }
+                }
+
+                funcion_intent()
+
+            }
+        }
+    }
+
+
+
+}
+
+fun cargarDatosApp(url:String,funcion_intent: () -> Unit){
+    url.httpGet().responseString{request, response, result ->
+        when (result) {
+            is Result.Failure -> {
+                val ex = result.getException()
+                Log.i("http", ex.toString())
+            }
+            is Result.Success -> {
+                val data = result.get()
+                aplicaciones.clear()
+                val wordDict = Klaxon().parseArray<Aplicacion>(data)
+                Log.i("http", "Datos: ${wordDict.toString()}")
+                if (wordDict != null) {
+                    for ( item in wordDict.iterator()){
+                        aplicaciones.add(item)
                     }
                 }
 
